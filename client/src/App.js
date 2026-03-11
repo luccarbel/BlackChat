@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import axios from 'axios';
 import './App.css';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -10,6 +11,10 @@ function App() {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
+    if (process.env.REACT_APP_API_URL) {
+      axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+    }
+
     // Generar o recuperar ID anónimo del usuario
     let storedUserId = localStorage.getItem('userId');
     if (!storedUserId) {

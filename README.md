@@ -74,6 +74,41 @@ npm start
 # Cliente ejecutándose en http://localhost:3000
 ```
 
+## Despliegue en GitHub Pages (solo frontend)
+
+GitHub Pages publica sitios estaticos. En este proyecto eso significa que solo se puede publicar `client/` en Pages; el backend `server/` debe ir en otro hosting (Render, Railway, Fly.io, etc.).
+
+### 1. Configurar variables del frontend
+
+Crea `client/.env.production` con:
+
+```bash
+REACT_APP_API_URL=https://TU_BACKEND_PUBLICO
+REACT_APP_SERVER_URL=https://TU_BACKEND_PUBLICO
+```
+
+### 2. Publicar a GitHub Pages
+
+```bash
+cd client
+npm install
+npm run deploy
+```
+
+### 3. Habilitar Pages en GitHub
+
+En el repositorio: `Settings > Pages`.
+
+- Source: `Deploy from a branch`
+- Branch: `gh-pages`
+- Folder: `/ (root)`
+
+La URL correcta queda como:
+
+`https://TU_USUARIO.github.io/TU_REPO/`
+
+Si abres `https://github.com/TU_USUARIO/TU_REPO`, siempre veras el README porque esa es la vista del repositorio, no el sitio publicado.
+
 ## Estructura del Proyecto
 
 ```
