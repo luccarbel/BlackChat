@@ -30,10 +30,6 @@
   letter-spacing: 0.5px;
 }
 
-.logo-icon {
-  font-size: 1.4rem;
-}
-
 .nav-menu {
   display: flex;
   gap: 4px;
@@ -58,23 +54,6 @@
   background: var(--white-subtle);
 }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: var(--white-subtle);
-  border-radius: 20px;
-  border: 1px solid var(--border);
-}
-
-.user-id {
-  font-size: 0.75rem;
-  color: var(--gold-light);
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
 @media (max-width: 768px) {
   .navbar-container {
     padding: 12px 14px;
@@ -93,7 +72,4 @@
     font-size: 1.15rem;
   }
 
-  .user-info {
-    display: none;
-  }
 }

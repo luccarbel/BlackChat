@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 import { FaImage, FaHome } from 'react-icons/fa';
 import './Navbar.css';
 
-function Navbar({ userId }) {
+function Navbar() {
   return (
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-logo">
-          <span className="logo-icon">🖤</span>
           BlackChat
         </Link>
         
@@ -19,10 +18,6 @@ function Navbar({ userId }) {
           <Link to="/photos" className="nav-link">
             <FaImage /> Fotos
           </Link>
-        </div>
-
-        <div className="user-info">
-          <span className="user-id">{userId?.substr(0, 8)}...</span>
         </div>
       </div>
     </nav>

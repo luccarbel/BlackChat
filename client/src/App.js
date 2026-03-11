@@ -28,7 +28,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <Navbar userId={userId} />
+        <Navbar />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Home userId={userId} />} />
