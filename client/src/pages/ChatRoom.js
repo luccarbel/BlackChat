@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
 import axios from 'axios';
+import { SOCKET_URL } from '../config';
 import './ChatRoom.css';
 
 function ChatRoom({ userId }) {
@@ -9,47 +10,51 @@ function ChatRoom({ userId }) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [room, setRoom] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
   const socketRef = useRef();
   const messagesEndRef = useRef(null);
 
+  const fetchRoomData = useCallback(async () => {
+    try {
+      const response = await axios.get(`/api/chats/rooms/${roomId}`);
+      setRoom(response.data);
+      setMessages(response.data.messages || []);
+      setErrorMessage('');
+    } catch (error) {
+      console.error('Error al obtener sala:', error);
+      setErrorMessage('No se pudo conectar al backend. Configura REACT_APP_API_URL y REACT_APP_SERVER_URL para usar el chat en GitHub Pages.');
+    }
+  }, [roomId]);
+
   useEffect(() => {
-    // Conectar socket
-    socketRef.current = io(process.env.REACT_APP_SERVER_URL || 'http://localhost:5000');
-    
-    socketRef.current.on('connect', () => {
-      console.log('Conectado al servidor');
-      socketRef.current.emit('join-room', roomId, userId);
-    });
+    if (SOCKET_URL) {
+      socketRef.current = io(SOCKET_URL);
 
-    socketRef.current.on('receive-message', (message) => {
-      setMessages(prev => [...prev, message]);
-    });
+      socketRef.current.on('connect', () => {
+        console.log('Conectado al servidor');
+        socketRef.current.emit('join-room', roomId, userId);
+      });
 
-    socketRef.current.on('user-joined', (data) => {
-      console.log('Usuario se unió:', data);
-    });
+      socketRef.current.on('receive-message', (message) => {
+        setMessages(prev => [...prev, message]);
+      });
+
+      socketRef.current.on('user-joined', (data) => {
+        console.log('Usuario se unió:', data);
+      });
+    }
 
     // Cargar sala y mensajes
     fetchRoomData();
 
     return () => {
-      socketRef.current.disconnect();
+      socketRef.current?.disconnect();
     };
-  }, [roomId, userId]);
+  }, [fetchRoomData, roomId, userId]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const fetchRoomData = async () => {
-    try {
-      const response = await axios.get(`/api/chats/rooms/${roomId}`);
-      setRoom(response.data);
-      setMessages(response.data.messages || []);
-    } catch (error) {
-      console.error('Error al obtener sala:', error);
-    }
-  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -67,7 +72,9 @@ function ChatRoom({ userId }) {
     };
 
     // Enviar por socket
-    socketRef.current.emit('send-message', roomId, message);
+    if (socketRef.current) {
+      socketRef.current.emit('send-message', roomId, message);
+    }
 
     // Guardar en BD
     try {
@@ -80,7 +87,11 @@ function ChatRoom({ userId }) {
   };
 
   if (!room) {
-    return <div className="loading">Cargando sala...</div>;
+    return (
+      <div className="loading">
+        {errorMessage || 'Cargando sala...'}
+      </div>
+    );
   }
 
   return (

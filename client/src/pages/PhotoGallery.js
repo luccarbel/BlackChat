@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './PhotoGallery.css';
 import { FaHeart, FaComment } from 'react-icons/fa';
+import { resolveMediaUrl } from '../config';
 
 function PhotoGallery({ userId }) {
   const [photos, setPhotos] = useState([]);
@@ -118,7 +119,7 @@ function PhotoGallery({ userId }) {
               className="photo-card"
               onClick={() => setSelectedPhoto(photo)}
             >
-              <img src={photo.filepath} alt="Foto anónima" />
+              <img src={resolveMediaUrl(photo.filepath)} alt="Foto anónima" />
               <div className="photo-overlay">
                 <div className="photo-stats">
                   <span className="stat">
@@ -139,7 +140,7 @@ function PhotoGallery({ userId }) {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <button className="btn-close" onClick={() => setSelectedPhoto(null)}>✕</button>
             <div className="modal-body">
-              <img src={selectedPhoto.filepath} alt="Foto" />
+              <img src={resolveMediaUrl(selectedPhoto.filepath)} alt="Foto" />
               <div className="modal-info">
                 <h3>{selectedPhoto.caption || 'Sin título'}</h3>
                 <div className="modal-stats">

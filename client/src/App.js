@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 import './App.css';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -11,8 +12,8 @@ function App() {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    if (process.env.REACT_APP_API_URL) {
-      axios.defaults.baseURL = process.env.REACT_APP_API_URL;
+    if (API_BASE_URL) {
+      axios.defaults.baseURL = API_BASE_URL;
     }
 
     // Generar o recuperar ID anónimo del usuario
