@@ -1,0 +1,50 @@
+# Dependencias
+node_modules/
+package-lock.json
+yarn.lock
+
+# Archivos de entorno
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Directorios de compilación
+build/
+dist/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Archivos de base de datos
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/
+.eslintcache
+
+# Archivos cargados
+uploads/
+public/uploads/
+
+# Archivos temporales
+tmp/
+temp/
+
+# OS
+Thumbs.db
+.DS_Store
