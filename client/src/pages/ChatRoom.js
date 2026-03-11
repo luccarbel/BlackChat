@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import io from 'socket.io-client';
 import axios from 'axios';
 import { SOCKET_URL } from '../config';
+import { getLocalRoom, saveLocalMessage } from '../storage';
 import './ChatRoom.css';
 
 function ChatRoom({ userId }) {
@@ -10,7 +11,6 @@ function ChatRoom({ userId }) {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [room, setRoom] = useState(null);
-  const [errorMessage, setErrorMessage] = useState('');
   const socketRef = useRef();
   const messagesEndRef = useRef(null);
 
@@ -19,10 +19,15 @@ function ChatRoom({ userId }) {
       const response = await axios.get(`/api/chats/rooms/${roomId}`);
       setRoom(response.data);
       setMessages(response.data.messages || []);
-      setErrorMessage('');
-    } catch (error) {
-      console.error('Error al obtener sala:', error);
-      setErrorMessage('No se pudo conectar al backend. Configura REACT_APP_API_URL y REACT_APP_SERVER_URL para usar el chat en GitHub Pages.');
+    } catch {
+      const localRoom = getLocalRoom(roomId);
+      if (localRoom) {
+        setRoom(localRoom);
+        setMessages(localRoom.messages || []);
+      } else {
+        setRoom({ roomId, roomName: `Sala ${roomId.substr(0, 6)}`, description: '', messages: [] });
+        setMessages([]);
+      }
     }
   }, [roomId]);
 
@@ -31,7 +36,6 @@ function ChatRoom({ userId }) {
       socketRef.current = io(SOCKET_URL);
 
       socketRef.current.on('connect', () => {
-        console.log('Conectado al servidor');
         socketRef.current.emit('join-room', roomId, userId);
       });
 
@@ -44,7 +48,6 @@ function ChatRoom({ userId }) {
       });
     }
 
-    // Cargar sala y mensajes
     fetchRoomData();
 
     return () => {
@@ -71,34 +74,29 @@ function ChatRoom({ userId }) {
       timestamp: new Date()
     };
 
-    // Enviar por socket
     if (socketRef.current) {
       socketRef.current.emit('send-message', roomId, message);
     }
 
-    // Guardar en BD
     try {
       await axios.post(`/api/chats/rooms/${roomId}/messages`, message);
-    } catch (error) {
-      console.error('Error al guardar mensaje:', error);
+    } catch {
+      saveLocalMessage(roomId, message);
+      setMessages(prev => [...prev, { ...message, id: Date.now() }]);
     }
 
     setInputValue('');
   };
 
   if (!room) {
-    return (
-      <div className="loading">
-        {errorMessage || 'Cargando sala...'}
-      </div>
-    );
+    return <div className="loading">Cargando sala...</div>;
   }
 
   return (
     <div className="chatroom-container">
       <div className="chatroom-header">
         <h2>{room.roomName}</h2>
-        <p className="room-desc">{room.description}</p>
+        <Link to="/" className="back-link">← Salas</Link>
       </div>
 
       <div className="messages-container">

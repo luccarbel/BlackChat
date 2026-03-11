@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { getLocalRooms, saveLocalRoom } from '../storage';
 import './Home.css';
 
 function Home({ userId }) {
@@ -17,9 +18,9 @@ function Home({ userId }) {
     try {
       const response = await axios.get('/api/chats/rooms');
       setRooms(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error al obtener salas:', error);
+    } catch {
+      setRooms(getLocalRooms());
+    } finally {
       setLoading(false);
     }
   };
@@ -29,10 +30,12 @@ function Home({ userId }) {
     try {
       const response = await axios.post('/api/chats/rooms', newRoom);
       setRooms([...rooms, response.data]);
+    } catch {
+      const created = saveLocalRoom(newRoom);
+      setRooms([...rooms, created]);
+    } finally {
       setNewRoom({ roomName: '', description: '' });
       setShowCreateRoom(false);
-    } catch (error) {
-      console.error('Error al crear sala:', error);
     }
   };
 

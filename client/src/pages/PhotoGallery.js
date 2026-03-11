@@ -3,6 +3,7 @@ import axios from 'axios';
 import './PhotoGallery.css';
 import { FaHeart, FaComment } from 'react-icons/fa';
 import { resolveMediaUrl } from '../config';
+import { getLocalPhotos, saveLocalPhoto, toggleLocalLike } from '../storage';
 
 function PhotoGallery({ userId }) {
   const [photos, setPhotos] = useState([]);
@@ -23,9 +24,9 @@ function PhotoGallery({ userId }) {
     try {
       const response = await axios.get('/api/photos');
       setPhotos(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error al obtener fotos:', error);
+    } catch {
+      setPhotos(getLocalPhotos());
+    } finally {
       setLoading(false);
     }
   };
@@ -33,6 +34,13 @@ function PhotoGallery({ userId }) {
   const handleFileChange = (e) => {
     setUploadData({ ...uploadData, photo: e.target.files[0] });
   };
+
+  const fileToDataUrl = (file) =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
 
   const handleUploadPhoto = async (e) => {
     e.preventDefault();
@@ -49,10 +57,18 @@ function PhotoGallery({ userId }) {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setPhotos([response.data, ...photos]);
+    } catch {
+      const dataUrl = await fileToDataUrl(uploadData.photo);
+      const created = saveLocalPhoto({
+        dataUrl,
+        caption: uploadData.caption,
+        tags: uploadData.tags,
+        userId,
+      });
+      setPhotos([created, ...photos]);
+    } finally {
       setUploadData({ photo: null, caption: '', tags: '' });
       setShowUpload(false);
-    } catch (error) {
-      console.error('Error al subir foto:', error);
     }
   };
 
@@ -62,8 +78,13 @@ function PhotoGallery({ userId }) {
       const updatedPhotos = photos.map(p => p._id === photoId ? response.data : p);
       setPhotos(updatedPhotos);
       if (selectedPhoto?._id === photoId) setSelectedPhoto(response.data);
-    } catch (error) {
-      console.error('Error al dar like:', error);
+    } catch {
+      const updated = toggleLocalLike(photoId, userId);
+      if (updated) {
+        const updatedPhotos = photos.map(p => p._id === photoId ? updated : p);
+        setPhotos(updatedPhotos);
+        if (selectedPhoto?._id === photoId) setSelectedPhoto(updated);
+      }
     }
   };
 
